@@ -1,0 +1,9 @@
+Utils/SolrSchema.class
+api/APIHandler.class
+SolrTemplates/TweetMeta.class
+SolrTemplates/SolrTweet.class
+Main/SolrIndexer.class
+SolrTemplates/SolrUser.class
+SolrTemplates/SolrField.class
+Main/SolrSetup.class
+constants/APIConstants.class
