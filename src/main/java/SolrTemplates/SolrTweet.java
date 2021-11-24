@@ -2,12 +2,11 @@
 package SolrTemplates;
 
 import org.apache.solr.client.solrj.beans.Field;
-import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
-import java.lang.reflect.Method;
-import java.math.BigInteger;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Document Class
@@ -25,22 +24,24 @@ import java.math.BigInteger;
 public class SolrTweet {
 
     String tweetID;
-    String userScreenName;
+    String userID;
     String tweetDateTime;
     String tweetText;
-    BigInteger tweetQuoteCount;
-    BigInteger tweetReplyCount;
-    BigInteger tweetRetweetCount;
-    String tweetHashtags;
-    String tweetUserMentions;
-    String tweetMediaURL;
-    String tweetAttachedLinks;
+    Long tweetFavoriteCount;
+    Long tweetQuoteCount;
+    Long tweetReplyCount;
+    Long tweetRetweetCount;
+    List<String> tweetHashtags;
+    List<String> tweetUserMentions;
+    List<String> tweetMediaURL;
+    List<String> tweetAttachedLinks;
 
-    public SolrTweet(String tweetID, String userScreenName, String tweetDateTime, String tweetText, BigInteger tweetQuoteCount, BigInteger tweetReplyCount, BigInteger tweetRetweetCount, String tweetHashtags, String tweetUserMentions, String tweetMediaURL, String tweetAttachedLinks) {
+    public SolrTweet(String tweetID, String userID, String tweetDateTime, String tweetText, Long tweetFavoriteCount, Long tweetQuoteCount, Long tweetReplyCount, Long tweetRetweetCount, List<String> tweetHashtags, List<String> tweetUserMentions, List<String> tweetMediaURL, List<String> tweetAttachedLinks) {
         this.tweetID = tweetID;
-        this.userScreenName = userScreenName;
+        this.userID = userID;
         this.tweetDateTime = tweetDateTime;
         this.tweetText = tweetText;
+        this.tweetFavoriteCount = tweetFavoriteCount;
         this.tweetQuoteCount = tweetQuoteCount;
         this.tweetReplyCount = tweetReplyCount;
         this.tweetRetweetCount = tweetRetweetCount;
@@ -54,22 +55,26 @@ public class SolrTweet {
         return this.tweetID;
     }
 
-    @Field("tweetID")
+    @Field("id")
     protected void setTweetID(String tweetID) {
         this.tweetID = tweetID;
     }
 
-    public String getUserScreenName() {
-        return this.userScreenName;
+    public String getUserID() {
+        return this.userID;
     }
 
-    @Field("userScreenName")
-    protected void setUserScreenName(String userScreenName) {
-        this.userScreenName = userScreenName;
+    @Field("userID")
+    protected void setUserID(String userID) {
+        this.userID = userID;
     }
 
     public String getTweetDateTime() {
         return this.tweetDateTime;
+    }
+
+    public OffsetDateTime getTweetParsedDateTime() {
+        return OffsetDateTime.parse(this.tweetDateTime);
     }
 
     @Field("tweetDateTime")
@@ -86,72 +91,81 @@ public class SolrTweet {
         this.tweetText = tweetText;
     }
 
-    public BigInteger getTweetQuoteCount() {
+    public Long getTweetFavoriteCount() {
+        return this.tweetFavoriteCount;
+    }
+
+    @Field("tweetFavoriteCount")
+    protected void setTweetFavoriteCount(Long tweetFavoriteCount) {
+        this.tweetFavoriteCount = tweetFavoriteCount;
+    }
+
+    public Long getTweetQuoteCount() {
         return this.tweetQuoteCount;
     }
 
     @Field("tweetQuoteCount")
-    protected void setTweetQuoteCount(BigInteger tweetQuoteCount) {
+    protected void setTweetQuoteCount(Long tweetQuoteCount) {
         this.tweetQuoteCount = tweetQuoteCount;
     }
 
-    public BigInteger getTweetReplyCount() {
+    public Long getTweetReplyCount() {
         return this.tweetReplyCount;
     }
 
     @Field("tweetReplyCount")
-    protected void setTweetReplyCount(BigInteger tweetReplyCount) {
+    protected void setTweetReplyCount(Long tweetReplyCount) {
         this.tweetReplyCount = tweetReplyCount;
     }
 
-    public BigInteger getTweetRetweetCount() {
+    public Long getTweetRetweetCount() {
         return this.tweetRetweetCount;
     }
 
     @Field("tweetRetweetCount")
-    protected void setTweetRetweetCount(BigInteger tweetRetweetCount) {
+    protected void setTweetRetweetCount(Long tweetRetweetCount) {
         this.tweetRetweetCount = tweetRetweetCount;
     }
 
-    public String getTweetHashtags() {
+    public List<String> getTweetHashtags() {
         return this.tweetHashtags;
     }
 
     @Field("tweetHashtags")
-    protected void setTweetHashtags(String tweetHashtags) {
+    protected void setTweetHashtags(List<String> tweetHashtags) {
         this.tweetHashtags = tweetHashtags;
     }
 
-    public String getTweetUserMentions() {
+    public List<String> getTweetUserMentions() {
         return this.tweetUserMentions;
     }
 
     @Field("tweetUserMentions")
-    protected void setTweetUserMentions(String tweetUserMentions) {
+    protected void setTweetUserMentions(List<String> tweetUserMentions) {
         this.tweetUserMentions = tweetUserMentions;
     }
 
-    public String getTweetMediaURL() {
+    public List<String> getTweetMediaURL() {
         return this.tweetMediaURL;
     }
 
     @Field("tweetMediaURL")
-    protected void setTweetMediaURL(String tweetMediaURL) {
+    protected void setTweetMediaURL(List<String> tweetMediaURL) {
         this.tweetMediaURL = tweetMediaURL;
     }
 
-    public String getTweetAttachedLinks() {
+    public List<String> getTweetAttachedLinks() {
         return this.tweetAttachedLinks;
     }
 
     @Field("tweetAttachedLinks")
-    protected void setTweetAttachedLinks(String tweetAttachedLinks) {
+    protected void setTweetAttachedLinks(List<String> tweetAttachedLinks) {
         this.tweetAttachedLinks = tweetAttachedLinks;
     }
 
     public String toString() {
         return "tweetID : " + this.tweetID +
-               "\n|--userScreenName : " + this.userScreenName+
+               "\n|--userID : " + this.userID+
                "\n|--tweetDateTime : " + this.tweetDateTime +
                "\n|--tweetText : " + this.tweetText +
                "\n|--tweetQuoteCount : " + this.tweetQuoteCount +

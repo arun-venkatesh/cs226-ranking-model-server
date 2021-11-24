@@ -2,10 +2,11 @@
 package Main;
 
 import SolrTemplates.SolrField;
+import SolrTemplates.SolrFieldType;
+import Utils.SolrDataParser;
 import Utils.SolrSchema;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,21 +14,21 @@ import java.util.Scanner;
 
 public class SolrSetup {
 
-    public void schemaLookup(SolrSchema solrUsersSchema, SolrSchema solrTweetsSchema) {
+    public void schemaLookup(SolrSchema solrUserSchema, SolrSchema solrTweetSchema) {
         Scanner schemaInput = new Scanner(System.in);
         System.out.println("**************************************************");
         System.out.println("*******************SCHEMA LOOKUPS*****************");
         System.out.println("**************************************************");
         System.out.println("Enter Schema Name: ");
         String input = schemaInput.nextLine();
-        List<String> userFields = solrUsersSchema.getFields();
-        List<String> tweetFields = solrTweetsSchema.getFields();
+        List<String> userFields = solrUserSchema.getFields();
+        List<String> tweetFields = solrTweetSchema.getFields();
         while(!input.equals("exit")) {
             if (userFields.contains(input)) {
-                System.out.println(solrUsersSchema.getField(input));
+                System.out.println(solrUserSchema.getField(input));
             }
             else if (tweetFields.contains(input)) {
-                System.out.println(solrTweetsSchema.getField(input));
+                System.out.println(solrTweetSchema.getField(input));
             }
             else {
                 System.out.println("Missing Schema Field");
@@ -35,45 +36,6 @@ public class SolrSetup {
             System.out.println("Enter Schema Name: ");
             input = schemaInput.nextLine();
         }
-    }
-
-    public void schemaCleanup(SolrSchema solrUserSchema, SolrSchema solrTweetSchema) {
-        System.out.println("**************************************************");
-        System.out.println("*******************SCHEMA CLEANUP*****************");
-        System.out.println("**************************************************");
-        System.out.println("Schema Cleanup Initiated");
-
-        try {
-            //Users - Schema Fields Cleanup
-            solrUserSchema.deleteField("userName");
-            solrUserSchema.deleteField("userScreenName");
-            solrUserSchema.deleteField("userFollowersCount");
-            solrUserSchema.deleteField("userFriendsCount");
-            solrUserSchema.deleteField("userVerified");
-            solrUserSchema.deleteField("userProfileImageURL");
-            solrUserSchema.deleteField("userProfileBannerURL");
-
-            //Tweets - Schema Fields Cleanup
-            solrTweetSchema.deleteField("tweetID");
-            solrTweetSchema.deleteField("userScreenName");
-            solrTweetSchema.deleteField("tweetDateTime");
-            solrTweetSchema.deleteField("tweetText");
-            solrTweetSchema.deleteField("tweetQuoteCount");
-            solrTweetSchema.deleteField("tweetReplyCount");
-            solrTweetSchema.deleteField("tweetRetweetCount");
-            solrTweetSchema.deleteField("tweetHashtags");
-            solrTweetSchema.deleteField("tweetUserMentions");
-            solrTweetSchema.deleteField("tweetMediaURL");
-            solrTweetSchema.deleteField("tweetAttachedLinks");
-        }
-        catch (Exception E) {
-            System.out.println("Schema does not exist!");
-        }
-
-        System.out.println("Schema Cleanup Successful");
-        System.out.println("**************************************************");
-        System.out.println("*******************END OF CLEANUP*****************");
-        System.out.println("**************************************************");
     }
 
     public static void main(String[] args) throws SolrServerException, IOException {
@@ -84,60 +46,93 @@ public class SolrSetup {
           Solr create collection command: ./bin/solr.cmd create -c users -s 2 -rf 2
          */
 
+        SolrDataParser dataParser = new SolrDataParser();
+
         //Connecting to solr user client
-        String urlUserString = "http://localhost:8983/solr/users";
-        SolrClient solrUsersClient = new HttpSolrClient.Builder(urlUserString).build();
-        SolrSchema solrUsersSchema = new SolrSchema(solrUsersClient);
+        SolrClient solrUserClient = dataParser.getSolrUserClient();
+        SolrSchema solrUserSchema = new SolrSchema(solrUserClient);
 
         System.out.println("**************************************************");
         System.out.println("********************SCHEMA SETUP******************");
         System.out.println("**************************************************");
         System.out.println("Initiating Schema Setup");
 
-        //Users - Schema Fields Setup
-        SolrField userName = new SolrField("userName", "text_general", true, true, false);
-        SolrField userScreenName = new SolrField("userScreenName", "text_general", true, true, false);
-        SolrField userFollowersCount = new SolrField("userFollowersCount", "text_general", true, true, false);
-        SolrField userFriendsCount = new SolrField("userFriendsCount", "text_general", true, true, false);
-        SolrField userVerified = new SolrField("userVerified", "text_general", true, true, false);
-        SolrField userProfileImageURL = new SolrField("userProfileImageURL", "text_general", true, true, false);
-        SolrField userProfileBannerURL = new SolrField("userProfileBannerURL", "text_general", true, true, false);
+        //Users - Schema Field Types Setup
+        SolrFieldType dateField = new SolrFieldType("date_time", "BM25");
+        SolrFieldType countField = new SolrFieldType("long_count", "BM25");
+        SolrFieldType urlField = new SolrFieldType("hyper_link", "Email", "Email", "BM25");
 
         try {
-            solrUsersSchema.addField(userName);
-            solrUsersSchema.addField(userScreenName);
-            solrUsersSchema.addField(userFollowersCount);
-            solrUsersSchema.addField(userFriendsCount);
-            solrUsersSchema.addField(userVerified);
-            solrUsersSchema.addField(userProfileImageURL);
-            solrUsersSchema.addField(userProfileBannerURL);
+            solrUserSchema.addFieldType(dateField);
+            solrUserSchema.addFieldType(countField);
+            solrUserSchema.addFieldType(urlField);
+        }
+        catch (Exception E) {
+            System.out.println("Users Field Types Exists!");
+            E.printStackTrace();
+        }
+
+        //Users - Schema Fields Setup
+        SolrField userDateTime = new SolrField("userDateTime", "date_time", true, true, false, false);
+        SolrField userName = new SolrField("userName", "string", true, true, false, false);
+        SolrField userScreenName = new SolrField("userScreenName", "string", true, true, false, false);
+        SolrField userFollowersCount = new SolrField("userFollowersCount", "long_count", true, true, false, false);
+        SolrField userFriendsCount = new SolrField("userFriendsCount", "long_count", true, true, false, false);
+        SolrField userVerified = new SolrField("userVerified", "boolean", true, true, false, false);
+        SolrField userProfileImageURL = new SolrField("userProfileImageURL", "hyper_link", true, true, false, false);
+        SolrField userProfileBannerURL = new SolrField("userProfileBannerURL", "hyper_link", true, true, false, false);
+
+        try {
+            solrUserSchema.addField(userDateTime);
+            solrUserSchema.addField(userName);
+            solrUserSchema.addField(userScreenName);
+            solrUserSchema.addField(userFollowersCount);
+            solrUserSchema.addField(userFriendsCount);
+            solrUserSchema.addField(userVerified);
+            solrUserSchema.addField(userProfileImageURL);
+            solrUserSchema.addField(userProfileBannerURL);
         }
         catch (Exception E) {
             System.out.println("Users Fields Exists!");
+            E.printStackTrace();
         }
 
         //Connecting to solr tweet client
-        String urlTweetString = "http://localhost:8983/solr/tweets";
-        SolrClient solrTweetClient = new HttpSolrClient.Builder(urlTweetString).build();
+        SolrClient solrTweetClient = dataParser.getSolrTweetClient();
         SolrSchema solrTweetSchema = new SolrSchema(solrTweetClient);
 
-        //Tweets - Schema Fields Setup
-        SolrField tweetID = new SolrField("tweetID", "text_general", true, true, false);
-        SolrField tweetDateTime = new SolrField("tweetDateTime", "text_general", true, true, false);
-        SolrField tweetText = new SolrField("tweetText", "text_general", true, true, false);
-        SolrField tweetQuoteCount = new SolrField("tweetQuoteCount", "text_general", true, true, false);
-        SolrField tweetReplyCount = new SolrField("tweetReplyCount", "text_general", true, true, false);
-        SolrField tweetRetweetCount = new SolrField("tweetRetweetCount", "text_general", true, true, false);
-        SolrField tweetHashtags = new SolrField("tweetHashtags", "text_general", true, true, false);
-        SolrField tweetUserMentions = new SolrField("tweetUserMentions", "text_general", true, true, false);
-        SolrField tweetMediaURL = new SolrField("tweetMediaURL", "text_general", true, true, false);
-        SolrField tweetAttachedLinks = new SolrField("tweetAttachedLinks", "text_general", true, true, false);
+        //Tweets - Schema Field Types Setup
+        SolrFieldType textField = new SolrFieldType("text_desc", "Classic", "Classic", "BM25");
 
         try {
-            solrTweetSchema.addField(tweetID);
-            solrTweetSchema.addField(userScreenName); //Same as User Schema
+            solrTweetSchema.addFieldType(dateField);
+            solrTweetSchema.addFieldType(countField);
+            solrTweetSchema.addFieldType(urlField);
+            solrTweetSchema.addFieldType(textField);
+        }
+        catch (Exception E) {
+            System.out.println("Tweet Field Types Exists!");
+            E.printStackTrace();
+        }
+
+        //Tweets - Schema Fields Setup
+        SolrField userID = new SolrField("userID", "string", true, true, false, false);
+        SolrField tweetDateTime = new SolrField("tweetDateTime", "date_time", true, true, false, false);
+        SolrField tweetText = new SolrField("tweetText", "text_desc", true, true, false, false);
+        SolrField tweetFavoriteCount = new SolrField("tweetFavoriteCount", "long_count", true, true, false, false);
+        SolrField tweetQuoteCount = new SolrField("tweetQuoteCount", "long_count", true, true, false, false);
+        SolrField tweetReplyCount = new SolrField("tweetReplyCount", "long_count", true, true, false, false);
+        SolrField tweetRetweetCount = new SolrField("tweetRetweetCount", "long_count", true, true, false, false);
+        SolrField tweetHashtags = new SolrField("tweetHashtags", "string", true, true, true, false);
+        SolrField tweetUserMentions = new SolrField("tweetUserMentions", "string", true, true, true, false);
+        SolrField tweetMediaURL = new SolrField("tweetMediaURL", "hyper_link", true, true, true, false);
+        SolrField tweetAttachedLinks = new SolrField("tweetAttachedLinks", "hyper_link", true, true, true,false);
+
+        try {
+            solrTweetSchema.addField(userID);
             solrTweetSchema.addField(tweetDateTime);
             solrTweetSchema.addField(tweetText);
+            solrTweetSchema.addField(tweetFavoriteCount);
             solrTweetSchema.addField(tweetQuoteCount);
             solrTweetSchema.addField(tweetReplyCount);
             solrTweetSchema.addField(tweetRetweetCount);
@@ -148,6 +143,7 @@ public class SolrSetup {
         }
         catch (Exception E) {
             System.out.println("Tweet Fields Exists!");
+            E.printStackTrace();
         }
 
         System.out.println("Schema Setup Successful");
@@ -157,15 +153,7 @@ public class SolrSetup {
 
         //Lookup Method
         SolrSetup solrSetup = new SolrSetup();
-        solrSetup.schemaLookup(solrUsersSchema, solrTweetSchema);
+        solrSetup.schemaLookup(solrUserSchema, solrTweetSchema);
 
-        //Cleanup Method
-        solrSetup.schemaCleanup(solrUsersSchema, solrTweetSchema);
-
-        /*
-         Solr delete collection command: ./bin/solr.cmd delete -c tweets
-         Solr delete collection command: ./bin/solr.cmd delete -c users
-         Solr stop command: ./bin/solr.cmd stop -all
-         */
     }
 }

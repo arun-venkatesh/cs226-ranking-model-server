@@ -1,4 +1,4 @@
-//Provides Field Class
+//Provides Schema Class (Field Class)
 package SolrTemplates;
 
 /**
@@ -10,6 +10,7 @@ package SolrTemplates;
  * indexed     - True/False
  * stored      - True/False
  * multiValued - True/False
+ * docValues   - True/False
  *
  */
 
@@ -20,13 +21,15 @@ public class SolrField {
     Object indexed;
     Object stored;
     Object multiValued;
+    Object docValues;
 
-    public SolrField(Object name, Object type, Object indexed, Object stored, Object multiValued) {
+    public SolrField(Object name, Object type, Object indexed, Object stored, Object multiValued, Object docValues) {
         this.name = name;
         this.type = type;
         this.indexed = indexed;
         this.stored = stored;
         this.multiValued = multiValued;
+        this.docValues = docValues;
     }
 
     public Object getName() {
@@ -49,11 +52,16 @@ public class SolrField {
         return (Boolean)this.multiValued;
     }
 
+    public Boolean checkDocValues() {
+        return (Boolean) this.docValues;
+    }
+
     public String toString() {
         return "name : " + this.name +
                "\n|--type : " + this.type +
                "\n|--indexed : " + this.indexed +
                "\n|--stored : " + this.stored +
-               "\n|--multiValued : " + this.multiValued;
+               "\n|--multiValued : " + this.multiValued +
+               "\n|--docValues : " + this.docValues ;
     }
 }

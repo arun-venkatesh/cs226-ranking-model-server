@@ -7,6 +7,7 @@ public class APIConstants {
 	public static final String RESPONSE_COUNT = "count";
 	public static final String RESPONSE_USER = "user";
 	public static final String RESPONSE_TWEET = "tweet";
+	public static final String RESPONSE_TWEET_PLURAL = "tweets";
 	public static final String RESPONSE_DATA = "data";
 	
 	public static final int HTTP_SUCCESS = 200;

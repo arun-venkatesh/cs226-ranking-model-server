@@ -2,8 +2,10 @@
 package Utils;
 
 import SolrTemplates.SolrField;
+import SolrTemplates.SolrFieldType;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.request.schema.FieldTypeDefinition;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
 
@@ -52,8 +54,9 @@ public class SolrSchema {
             Object indexed = responseField.getOrDefault("indexed", null);
             Object stored = responseField.getOrDefault("stored", null);
             Object multiValued = responseField.getOrDefault("multiValued", null);
+            Object docValues = responseField.getOrDefault("docValues", null);
 
-            field = new SolrField(name, type, indexed, stored, multiValued);
+            field = new SolrField(name, type, indexed, stored, multiValued, docValues);
         }
         catch (Exception E) {
             System.out.println("Field does not exist");
@@ -107,6 +110,25 @@ public class SolrSchema {
         return storedFields;
     }
 
+    //Creates a field type on the Collection Schema
+    public void addFieldType(SolrFieldType fieldType) throws IOException, SolrServerException {
+
+        FieldTypeDefinition fieldTypeDefinition = new FieldTypeDefinition();
+        if(fieldType.getAttributes() != null) fieldTypeDefinition.setAttributes(fieldType.getAttributes());
+        if(fieldType.getIndexAnalyzer() != null) fieldTypeDefinition.setIndexAnalyzer(fieldType.getIndexAnalyzer());
+        if(fieldType.getQueryAnalyzer() != null) fieldTypeDefinition.setQueryAnalyzer(fieldType.getQueryAnalyzer());
+        if(fieldType.getSimilarity() != null) fieldTypeDefinition.setSimilarity(fieldType.getSimilarity());
+
+        SchemaRequest.AddFieldType schemaRequest = new SchemaRequest.AddFieldType(fieldTypeDefinition);
+        schemaRequest.process(solrClient);
+    }
+
+    public void deleteFieldType(String name) throws IOException, SolrServerException {
+
+        SchemaRequest.DeleteFieldType schemaRequest = new SchemaRequest.DeleteFieldType(name);
+        schemaRequest.process(solrClient);
+    }
+
     //Creates a field on the Collection Schema
     public void addField(SolrField field) throws IOException, SolrServerException {
 
@@ -116,6 +138,7 @@ public class SolrSchema {
         fieldAttributes.put("indexed", field.checkIndexed());
         fieldAttributes.put("stored", field.checkStored());
         fieldAttributes.put("multiValued", field.checkMultiValued());
+        fieldAttributes.put("docValues", field.checkDocValues());
 
         SchemaRequest.AddField schemaRequest = new SchemaRequest.AddField(fieldAttributes);
         schemaRequest.process(solrClient);
@@ -126,4 +149,5 @@ public class SolrSchema {
         SchemaRequest.DeleteField schemaRequest = new SchemaRequest.DeleteField(name);
         schemaRequest.process(solrClient);
     }
+
 }

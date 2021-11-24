@@ -1,14 +1,11 @@
 //Provides Document Class (User Class)
 package SolrTemplates;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
-
 import org.apache.solr.client.solrj.beans.Field;
-import org.json.JSONObject;
 
 import com.google.gson.Gson;
+
+import java.time.OffsetDateTime;
 
 /**
  * Document Class
@@ -25,15 +22,19 @@ import com.google.gson.Gson;
 
 public class SolrUser {
 
+    String userID;
+    String userDateTime;
     String userName;
     String userScreenName;
-    BigInteger userFollowersCount;
-    BigInteger userFriendsCount;
+    Long userFollowersCount;
+    Long userFriendsCount;
     Boolean userVerified;
     String userProfileImageURL;
     String userProfileBannerURL;
 
-    public SolrUser(String userName, String userScreenName, BigInteger userFollowersCount, BigInteger userFriendsCount, Boolean userVerified, String userProfileImageURL, String userProfileBannerURL) {
+    public SolrUser(String userID, String userDateTime, String userName, String userScreenName, Long userFollowersCount, Long userFriendsCount, Boolean userVerified, String userProfileImageURL, String userProfileBannerURL) {
+        this.userID = userID;
+        this.userDateTime = userDateTime;
         this.userName = userName;
         this.userScreenName = userScreenName;
         this.userFollowersCount = userFollowersCount;
@@ -41,6 +42,28 @@ public class SolrUser {
         this.userVerified = userVerified;
         this.userProfileImageURL = userProfileImageURL;
         this.userProfileBannerURL = userProfileBannerURL;
+    }
+
+    public String getUserID() {
+        return this.userID;
+    }
+
+    @Field("id")
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+
+    public String getUserDateTime() {
+        return this.userDateTime;
+    }
+
+    public OffsetDateTime getUserParsedDateTime() {
+        return OffsetDateTime.parse(this.userDateTime);
+    }
+
+    @Field("userDateTime")
+    public void setUserDateTime(String userDateTime) {
+        this.userDateTime = userDateTime;
     }
 
     public String getUserScreenName() {
@@ -61,25 +84,25 @@ public class SolrUser {
         this.userName = userName;
     }
 
-    public BigInteger getFollowersCount() {
+    public Long getUserFollowersCount() {
         return this.userFollowersCount;
     }
 
     @Field("userFollowersCount")
-    protected void setUserFollowersCount(BigInteger userFollowersCount) {
+    protected void setUserFollowersCount(Long userFollowersCount) {
         this.userFollowersCount = userFollowersCount;
     }
 
-    public BigInteger getFriendsCount() {
+    public Long getUserFriendsCount() {
         return this.userFriendsCount;
     }
 
     @Field("userFriendsCount")
-    protected void setUserFriendsCount(BigInteger userFriendsCount) {
+    protected void setUserFriendsCount(Long userFriendsCount) {
         this.userFriendsCount = userFriendsCount;
     }
 
-    public Boolean checkVerified() {
+    public Boolean getUserVerified() {
         return this.userVerified;
     }
 
@@ -107,7 +130,9 @@ public class SolrUser {
     }
 
     public String toString() {
-        return "userScreenName : " + this.userScreenName +
+        return "userID : " + this.userID +
+               "\n|--userDateTime : " + this.userDateTime +
+               "\n|--userScreenName : " + this.userScreenName +
                "\n|--userName : " + this.userName +
                "\n|--userFollowersCount : " + this.userFollowersCount +
                "\n|--userFriendsCount : " + this.userFriendsCount +
@@ -119,6 +144,5 @@ public class SolrUser {
     public String toJSON() throws Exception {
     	return new Gson().toJson(this);
     }
-
 
 }
