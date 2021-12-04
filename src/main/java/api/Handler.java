@@ -1,10 +1,10 @@
 package api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,8 +49,8 @@ public class Handler {
 					SolrUser user = entry.getValue();
 					
 					JSONObject tempObj = new JSONObject();
-					JSONObject solrUser = new JSONObject(user.toJSON());
-					JSONObject solrTweet = new JSONObject(tweet.toJSON());
+					JSONObject solrUser = handleUserObject(user.toJSON());
+					JSONObject solrTweet = handleTweetObject(tweet.toJSON());
 					
 					tempObj.put(APIConstants.RESPONSE_USER, solrUser);
 					tempObj.put(APIConstants.RESPONSE_TWEET, solrTweet);
@@ -92,8 +92,8 @@ public class Handler {
 					SolrUser user = entry.getValue();
 					
 					JSONObject tempObj = new JSONObject();
-					JSONObject solrUser = new JSONObject(user.toJSON());
-					JSONObject solrTweet = new JSONObject(tweet.toJSON());
+					JSONObject solrUser = handleUserObject(user.toJSON());
+					JSONObject solrTweet = handleTweetObject(tweet.toJSON());
 					
 					tempObj.put(APIConstants.RESPONSE_USER, solrUser);
 					tempObj.put(APIConstants.RESPONSE_TWEET, solrTweet);
@@ -131,8 +131,7 @@ public class Handler {
 				
 				SolrUser user = entry.getKey();
 				
-				
-				JSONObject solrUser = new JSONObject(user.toJSON());
+				JSONObject solrUser = handleUserObject(user.toJSON());
 				obj.put(APIConstants.RESPONSE_USER, solrUser);
 				
 				List<SolrTweet> tweets = entry.getValue();
@@ -141,7 +140,7 @@ public class Handler {
 				
 				JSONArray arr = new JSONArray();
 				for(SolrTweet tweet : tweets) {
-					JSONObject solrTweet = new JSONObject(tweet.toJSON());
+					JSONObject solrTweet = handleTweetObject(tweet.toJSON());
 					arr.put(solrTweet);
 				}
 				obj.put(APIConstants.RESPONSE_TWEET_PLURAL, arr);
@@ -159,8 +158,82 @@ public class Handler {
 			errorObj.put(APIConstants.RESPONSE_MESSAGE, APIConstants.HTTP_INTERNAL_SERVER_ERROR_MESSAGE);
 			return errorObj.toString();
 		}
-		
-		
+	}
+	
+	private JSONObject handleUserObject(String user) {
+		try {
+			return new JSONObject(user);
+		} catch (JSONException e) {
+			return null;
+		}
+	}
+	
+	private JSONObject handleTweetObject(String tweet) {
+		try {
+			JSONObject obj = new JSONObject(tweet);
+			
+			JSONArray tweetAttachedLinks = obj.optJSONArray("tweetAttachedLinks");
+			if(tweetAttachedLinks.length() > 0) {
+				JSONArray arr = new JSONArray();
+				for(int i=0;i<tweetAttachedLinks.length();i++) {
+					String currentStr = tweetAttachedLinks.getString(i);
+					if(currentStr.length() != 0) {
+						currentStr = currentStr.trim();
+						currentStr = currentStr.substring(1, currentStr.length()-1);
+						arr.put(currentStr);
+					}
+				}
+				obj.put("tweetAttachedLinks", arr);
+			}
+			
+			JSONArray tweetUserMentions = obj.optJSONArray("tweetUserMentions");
+			if(tweetUserMentions.length() > 0) {
+				JSONArray arr = new JSONArray();
+				for(int i=0;i<tweetUserMentions.length();i++) {
+					String currentStr = tweetUserMentions.getString(i);
+					if(currentStr.length() != 0) {
+						currentStr = currentStr.trim();
+						currentStr = currentStr.substring(1, currentStr.length()-1);
+						arr.put(currentStr);
+					}
+				}
+				obj.put("tweetUserMentions", arr);
+			}
+			
+			JSONArray tweetMediaURL = obj.optJSONArray("tweetMediaURL");
+			if(tweetMediaURL.length() > 0) {
+				JSONArray arr = new JSONArray();
+				for(int i=0;i<tweetMediaURL.length();i++) {
+					String currentStr = tweetMediaURL.getString(i);
+					if(currentStr.length() != 0) {
+						currentStr = currentStr.trim();
+						currentStr = currentStr.substring(1, currentStr.length()-1);
+						arr.put(currentStr);
+					}
+				}
+				obj.put("tweetMediaURL", arr);
+			}
+			
+			JSONArray tweetHashtags = obj.optJSONArray("tweetHashtags");
+			if(tweetHashtags.length() > 0) {
+				JSONArray arr = new JSONArray();
+				for(int i=0;i<tweetHashtags.length();i++) {
+					String currentStr = tweetHashtags.getString(i);
+					if(currentStr.length() != 0) {
+						currentStr = currentStr.trim();
+						currentStr = currentStr.substring(1, currentStr.length()-1);
+						arr.put(currentStr);
+					}
+				}
+				obj.put("tweetHashtags", arr);
+			}
+			
+			return obj;
+			
+		}catch(Exception e)
+		{
+			return null;
+		}
 	}
 	
 	
